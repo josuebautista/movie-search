@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import './App.css'
 import Loader from './components/Loader'
 import Movies from './components/Movies'
@@ -5,21 +6,29 @@ import SortButton from './components/SortButton'
 import { useMovies } from './hooks/useMovies'
 import { useSearch } from './hooks/useSearch'
 import { useSort } from './hooks/useSort'
-
+import debounce from 'just-debounce-it'
 
 function App() {
   const { search, setSearch, errorSearch } = useSearch()
   const { sort, setSort } = useSort()
   const { movies, loading, errorMovies, getMovies } = useMovies({ search, sort })
 
+  const debounceGetMovies = useCallback(
+    debounce((search: string) => {
+      getMovies({ search })
+    }, 300)
+    , [])
+
   const handleSumbit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    getMovies()
+    getMovies({ search })
   }
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newSearch = event.target.value
     setSearch(() => newSearch)
+    if(newSearch.length < 3) return
+    debounceGetMovies(newSearch)
   }
 
   return (
@@ -56,37 +65,3 @@ function App() {
 }
 
 export default App
-
-
-//forma no controlada
-// function App1() {
-//   const { movies } = useMovies()
-//   const inputRef = useRef<HTMLInputElement | null>(null)
-
-//   const handleSumbit = (event: React.FormEvent<HTMLFormElement>) => {
-//     event.preventDefault()
-//     if (inputRef.current === null) return
-//     const inputEl = inputRef.current
-//     const value = inputEl.value
-//     console.log(value)
-//   }
-
-//   return (
-//     <div className='page'>
-//       <header>
-//         <h1>Movies Search</h1>
-//         <form className='form' onSubmit={handleSumbit}>
-//           <input 
-//             ref={inputRef} 
-//             type="text" 
-//             placeholder='Avenger, Star Wars...' 
-//           />
-//           <button type='submit'>Search</button>
-//         </form>
-//       </header>
-//       <main>
-//         <Movies movies={movies} />
-//       </main>
-//     </div>
-//   )
-// }

@@ -4,7 +4,7 @@ export const searchMovies = async (search: string) => {
   if (!search) return []
   try {
     const res = await fetch(import.meta.env.VITE_ENDPOINT_API_URL + `s=${search}`)
-    const json: SearchResponse = await res.json()
+    const json = await res.json() as SearchResponse
     const movies = json.Search
     return movies.map(movie => ({
       id: movie.imdbID,
